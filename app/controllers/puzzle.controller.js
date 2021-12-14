@@ -19,8 +19,7 @@ exports.getOne = (req,res) => {
     })
     .catch(err => {
       res.status(500).send({
-        message: "Error retrieving Puzzle with id=" + id,
-        err
+        message: "Error retrieving Puzzle with id=" + id
       });
     });    
 }
