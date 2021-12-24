@@ -7,6 +7,9 @@ const sequelize = new Sequelize({
     port: process.env.PUZZLE_DB_PORT,
     database: process.env.PUZZLE_DB_DB,
     logging: false,
+    dialectOptions: {
+      ssl: true
+  }
   });
 
 const db = {};
