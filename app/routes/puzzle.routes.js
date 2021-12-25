@@ -2,10 +2,9 @@ module.exports = app => {
     const puzzles = require("../controllers/puzzle.controller.js");
     var router = require("express").Router();
 
-    //get one random puzzle
-    router.get("/", puzzles.getRandom);
-    //get one puzzle by id
-    router.get("/:id", puzzles.getOne);
+    // The whole API is access from the one root route
+    // with different options specified by query string
+    router.get("/", puzzles.mainAccess);
 
-    app.use('/api/puzzles', router);
+    app.use('/api', router);
 };
