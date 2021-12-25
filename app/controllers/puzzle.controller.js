@@ -26,14 +26,18 @@ exports.getOne = (req,res) => {
 
 // Get one random puzzle
 exports.getRandom = async (req,res) => {
-  var id = 10; // Math.floor(Math.random() * 2000000)+1;
+  var randRating = Math.floor(Math.random() * (3001 - 511 + 1) + 511);
+  var variation = 1;
+
   const puzzle = await sequelize.query(
-      "SELECT puzzleid,fen,rating,ratingdeviation,moves,themes FROM puzzles WHERE id = " + id, 
+      "SELECT puzzleid,fen,rating,ratingdeviation,moves,themes FROM puzzles WHERE rating >= "+(randRating-variation)+" AND rating <= "+(randRating+variation)+" ORDER BY RANDOM() LIMIT 1",
       {
         type: QueryTypes.SELECT,
         model: Puzzle,
         mapToModel: true
       });
 
-  res.send({id,puzzle})
+  res.send({puzzle})
 }
+
+// 
