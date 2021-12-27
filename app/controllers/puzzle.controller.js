@@ -5,6 +5,9 @@ const Puzzle = db.puzzles;
 const Op = db.Sequelize.Op;
 
 exports.mainAccess = async (req,res) => {
+  // TODO: ERROR HANDLING AND SQL INJECTION PREVENTION
+
+
   let puzzles 
   let queryString = "SELECT puzzleid,fen,rating,ratingdeviation,moves,themes FROM puzzles WHERE 1=1 "
 
@@ -33,12 +36,19 @@ exports.mainAccess = async (req,res) => {
   // If no ID, then we need to handle
   // COUNT
   // THEMES
-  // and RATING
+  // RATING
+  // LENGTH
   else {
     let limit = req.query.count ? req.query.count : 1
 
     if(req.query.rating) {
       queryString += "AND rating BETWEEN " + (parseInt(req.query.rating)) + "-ratingdeviation AND " + (parseInt(req.query.rating)) + "+ratingdeviation "
+    }
+
+    // Number of moves in the puzzle
+    // specified by moves the PLAYER makes
+    if(req.query.playerMoves){
+      queryString += "AND array_length(moves,1) = " +(parseInt(req.query.playerMoves)*2) + " "
     }
 
     // If themes are specified, they also need to specify a type
@@ -66,7 +76,5 @@ exports.mainAccess = async (req,res) => {
 
   }
     
-  res.send({puzzles})
+  res.send({queryString,puzzles})
 }
-
-// 
