@@ -5,6 +5,12 @@ const Puzzle = db.puzzles;
 const Op = db.Sequelize.Op;
 
 exports.mainAccess = async (req,res) => {
+
+  if(req.headers["X-RapidAPI-Proxy-Secret"] == undefined || req.headers["X-RapidAPI-Proxy-Secret"] != process.env.RapidAPISecret) {
+    res.send({"status":400,"error":"Request must be sent via RapidAPI"}) 
+    return
+  }
+
   let puzzles 
   let queryString = "SELECT puzzleid,fen,rating,ratingdeviation,moves,themes FROM puzzles WHERE 1=1 "
   let secStr = ["/",";","'",'"']
