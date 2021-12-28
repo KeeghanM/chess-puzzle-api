@@ -93,7 +93,7 @@ exports.mainAccess = async (req,res) => {
       // Now loop through the themes and attach them
       for(let theme of themes){
         queryString += " '" +theme+ "'=ANY(themes)"
-        queryString += req.query.themesType == "OR" ? " OR" : " AND" // the type sets whether we use AND or OR selectors for the theme
+        queryString += req.query.themesType == "ALL" ? " AND" : " OR" // the type sets whether we use AND or OR selectors for the theme
       }
       queryString = queryString.substring(0, queryString.lastIndexOf(" "));
       queryString += ") "
