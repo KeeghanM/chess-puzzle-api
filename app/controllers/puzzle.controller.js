@@ -6,10 +6,7 @@ const Op = db.Sequelize.Op;
 
 exports.mainAccess = async (req,res) => {
 
-  res.send({headers:req.headers})
-  return
-
-  if(req.headers["X-RapidAPI-Proxy-Secret"] == undefined || req.headers["X-RapidAPI-Proxy-Secret"] != process.env.RapidAPISecret) {
+  if(req.headers["x-mashape-proxy-secret"] == undefined || req.headers["x-mashape-proxy-secret"] != process.env.RapidAPISecret) {
     res.status(400).send("Request must be sent via RapidAPI") 
     return
   }
