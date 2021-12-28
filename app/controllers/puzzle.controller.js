@@ -102,6 +102,8 @@ exports.mainAccess = async (req,res) => {
     // We always want to attach a rating (to make the query faster) and a limit
     // If the user hasn't supplied a rating, we will generate one for them
     let limit = req.query.count ? req.query.count : 1
+    limit = limit > 500 ? 500 : limit
+
     let rating = req.query.rating ? req.query.rating : Math.floor(Math.random() * (3001 - 511 + 1) + 511);
     queryString += "AND rating BETWEEN " + (parseInt(rating)) + "-ratingdeviation AND " + (parseInt(rating)) + "+ratingdeviation ORDER BY RANDOM() LIMIT "+limit
 
