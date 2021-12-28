@@ -7,7 +7,7 @@ const Op = db.Sequelize.Op;
 exports.mainAccess = async (req,res) => {
 
   if(req.headers["X-RapidAPI-Proxy-Secret"] == undefined || req.headers["X-RapidAPI-Proxy-Secret"] != process.env.RapidAPISecret) {
-    res.send({"status":400,"error":"Request must be sent via RapidAPI"}) 
+    res.status(400).send("Request must be sent via RapidAPI") 
     return
   }
 
@@ -35,7 +35,7 @@ exports.mainAccess = async (req,res) => {
       secStr.some(x => req.query.id.includes(x))
     ) {
       // Validate ID for Security
-      res.send({"status":400,"error":"Invalid ID Sent"}) 
+      res.status(400).send("Invalid ID Sent")
       return
     } 
 
@@ -60,7 +60,7 @@ exports.mainAccess = async (req,res) => {
       (req.query.themes && secStr.some(x => req.query.themes.includes(x))) ||
       (req.query.themesType && secStr.some(x => req.query.themesType.includes(x)))
     ) {
-      res.send({"status":400,"error":"Invalid Query String"}) 
+      res.status(400).send("Invalid Query String")
       return
     }
 
@@ -93,7 +93,7 @@ exports.mainAccess = async (req,res) => {
       queryString += ") "
     } else {
       console.log("in")
-      res.send({"status":400,"error":"Invalid Query String"}) 
+      res.status(400).send("Invalid Query String")
       return
     }
     }
@@ -112,12 +112,11 @@ exports.mainAccess = async (req,res) => {
   
 
   if(puzzles.length == 0){
-    res.send({"status":400,"error":"No Matching Puzzles"}) 
+    res.status(400).send("No Matching Puzzles")
     return
   }
 
-  res.send({
-    status: 200,
+  res.status(200).send({
     puzzles
   })
 }
