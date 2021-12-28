@@ -5,11 +5,9 @@ const Puzzle = db.puzzles;
 const Op = db.Sequelize.Op;
 
 exports.mainAccess = async (req,res) => {
-  // TODO: ERROR HANDLING AND SQL INJECTION PREVENTION
-
-
   let puzzles 
   let queryString = "SELECT puzzleid,fen,rating,ratingdeviation,moves,themes FROM puzzles WHERE 1=1 "
+  let secStr = ["/",";","'",'"']
 
   // First check if no query string present
   // if this is the case, return a single random puzzle
@@ -25,6 +23,16 @@ exports.mainAccess = async (req,res) => {
   }
   // If an ID gets passed in, handle that as a priority
   else if(req.query.id){
+
+    if(
+      req.query.id.length > 6 || 
+      secStr.some(x => req.query.id.includes(x))
+    ) {
+      // Validate ID for Security
+      res.send({"status":400,"error":"Invalid ID Sent"}) 
+      return
+    } 
+
     puzzles = await sequelize.query(
       queryString + "AND puzzleid = '" + req.query.id + "' LIMIT 1",
       {
@@ -37,8 +45,19 @@ exports.mainAccess = async (req,res) => {
   // COUNT
   // THEMES
   // RATING
-  // LENGTH
+  // PLAYERMOVES
   else {
+    if(
+      (req.query.rating && parseInt(req.query.rating) == "NaN") ||
+      (req.query.playerMoves && parseInt(req.query.playerMoves) == "NaN") ||
+      (req.query.count && parseInt(req.query.count) == "NaN") ||
+      (req.query.themes && secStr.some(x => req.query.themes.includes(x))) ||
+      (req.query.themesType && secStr.some(x => req.query.themesType.includes(x)))
+    ) {
+      res.send({"status":400,"error":"Invalid Query String"}) 
+      return
+    }
+
     let limit = req.query.count ? req.query.count : 1
 
     if(req.query.rating) {
@@ -51,17 +70,26 @@ exports.mainAccess = async (req,res) => {
       queryString += "AND array_length(moves,1) = " +(parseInt(req.query.playerMoves)*2) + " "
     }
 
-    // If themes are specified, they also need to specify a type
-    if(req.query.themes && req.query.themesType) {
-
+    // If multiple themes are specified, they also need to specify a type
+    if(req.query.themes) {
+      if(req.query.themesType || typeof(req.query.themes) == "string") {
       queryString += "AND ("
 
-      for(let theme of req.query.themes){
-        queryString += " '" +theme+ "'=ANY(themes)"
-        queryString += req.query.themesType == "OR" ? " OR" : " AND" // the type sets whether we use AND or OR selectors for the theme
+      if(typeof(req.query.themes) == "string") {
+        queryString += " '" +req.query.themes+ "'=ANY(themes)"
+      } else {
+        for(let theme of req.query.themes){
+          queryString += " '" +theme+ "'=ANY(themes)"
+          queryString += req.query.themesType == "OR" ? " OR" : " AND" // the type sets whether we use AND or OR selectors for the theme
+        }
+        queryString = queryString.substring(0, queryString.lastIndexOf(" "));
       }
-      queryString = queryString.substring(0, queryString.lastIndexOf(" "));
       queryString += ") "
+    } else {
+      console.log("in")
+      res.send({"status":400,"error":"Invalid Query String"}) 
+      return
+    }
     }
 
     queryString += " ORDER BY RANDOM() LIMIT "+limit
@@ -75,6 +103,15 @@ exports.mainAccess = async (req,res) => {
       });
 
   }
-    
-  res.send({queryString,puzzles})
+  
+
+  if(puzzles.length == 0){
+    res.send({"status":400,"error":"No Matching Puzzles"}) 
+    return
+  }
+
+  res.send({
+    status: 200,
+    puzzles
+  })
 }

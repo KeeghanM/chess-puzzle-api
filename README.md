@@ -37,7 +37,7 @@ Passing in an ID will return one puzzle matching that ID. Even if you pass other
 #### count
 
 
-#### themes[]
+#### themes
 
 
 #### themesType
