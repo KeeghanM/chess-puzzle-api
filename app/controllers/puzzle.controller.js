@@ -1,3 +1,7 @@
+// TO DO:
+//  - Change theme array handling 
+
+
 const { sequelize } = require("../models");
 const {QueryTypes} = require('sequelize');
 const db = require("../models");
@@ -14,7 +18,7 @@ exports.mainAccess = async (req,res) => {
   let puzzles 
   let queryString = "SELECT puzzleid,fen,rating,ratingdeviation,moves,themes FROM puzzles WHERE 1=1 "
   let secStr = ["/",";","'",'"']
-
+  
   // First check if no query string present
   // if this is the case, return a single random puzzle
   if(Object.keys(req.query).length === 0){
@@ -64,12 +68,6 @@ exports.mainAccess = async (req,res) => {
       return
     }
 
-    let limit = req.query.count ? req.query.count : 1
-
-    if(req.query.rating) {
-      queryString += "AND rating BETWEEN " + (parseInt(req.query.rating)) + "-ratingdeviation AND " + (parseInt(req.query.rating)) + "+ratingdeviation "
-    }
-
     // Number of moves in the puzzle
     // specified by moves the PLAYER makes
     if(req.query.playerMoves){
@@ -91,14 +89,19 @@ exports.mainAccess = async (req,res) => {
         queryString = queryString.substring(0, queryString.lastIndexOf(" "));
       }
       queryString += ") "
-    } else {
-      console.log("in")
-      res.status(400).send("Invalid Query String")
-      return
-    }
-    }
 
-    queryString += " ORDER BY RANDOM() LIMIT "+limit
+      } else {
+        console.log("in")
+        res.status(400).send("Invalid Query String")
+        return
+      }
+    }
+    
+    // We always want to attach a rating (to make the query faster) and a limit
+    // If the user hasn't supplied a rating, we will generate one for them
+    let limit = req.query.count ? req.query.count : 1
+    let rating = req.query.rating ? req.query.rating : Math.floor(Math.random() * (3001 - 511 + 1) + 511);
+    queryString += "AND rating BETWEEN " + (parseInt(rating)) + "-ratingdeviation AND " + (parseInt(rating)) + "+ratingdeviation ORDER BY RANDOM() LIMIT "+limit
 
     puzzles = await sequelize.query(
       queryString,
