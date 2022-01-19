@@ -1,5 +1,7 @@
-# chess-puzzle-api
-## A Simple API to access the LiChess Puzzle's Database
+# [ChessPuzzle API] (https://rapidapi.com/KeeghanM/api/chess-puzzles)
+## A Simple API to access over 2 Million Chess Puzzles
+This API uses puzzles provided by LiChess but is a 3rd party solution not affiliated with LiChess.
+If you wish to access the LiChess puzzle collection yourself you can do so here: https://database.lichess.org/#puzzles
 Puzzles Database last updated 10/12/2021
 Current Puzzle Count: 2,137,287
 
@@ -26,6 +28,7 @@ The position to present to the player is after applying the first move to that F
 The second move is the beginning of the solution.
 
 ### Using The API
+To access the API you must register with [RapidAPI](https://rapidapi.com/KeeghanM/api/chess-puzzles/) doing so is 100% free, and the API is available for free consumption.
 All queries are handle by query string parameters. The currently available parameters are
 
 #### BLANK
