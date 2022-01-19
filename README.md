@@ -1,8 +1,12 @@
-# [ChessPuzzle API] (https://rapidapi.com/KeeghanM/api/chess-puzzles)
+# [ChessPuzzle API](https://rapidapi.com/KeeghanM/api/chess-puzzles)
 ## A Simple API to access over 2 Million Chess Puzzles
+
 This API uses puzzles provided by LiChess but is a 3rd party solution not affiliated with LiChess.
+
 If you wish to access the LiChess puzzle collection yourself you can do so here: https://database.lichess.org/#puzzles
+
 Puzzles Database last updated 10/12/2021
+
 Current Puzzle Count: 2,137,287
 
 ### Puzzle Format
