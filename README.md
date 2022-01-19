@@ -33,6 +33,7 @@ The second move is the beginning of the solution.
 
 ### Using The API
 To access the API you must register with [RapidAPI](https://rapidapi.com/KeeghanM/api/chess-puzzles/) doing so is 100% free, and the API is available for free consumption.
+
 All queries are handle by query string parameters. The currently available parameters are
 
 #### BLANK
@@ -40,30 +41,40 @@ Leaving the query blank and simply hitting the root / of the API will return a s
 
 #### id
 Passing in an ID will return one puzzle matching that ID. Even if you pass other variables, including an ID overides them all and will always return a single puzzle matching that id.
+
 If the id is invalid or doesn't match a puzzle in the database, a status 400 error will be returned
 
 #### rating
 Pass an int to return puzzles around this rating level. This uses the ratingVariation of the puzzle to determine if it's within range.
+
 So for example, if you pass `?rating=1500` you could get a puzzle of 1430 if it's rating variation is 70
+
 The SQL query is `WHERE rating BETWEEN rating-deviation AND rating+deviation`
 
 #### count
 Pass an int between 1 and 500 to return that many puzzles
+
 If you send a *very* specific request, you may find you get back less than the requested number.
+
 However, any rating and up to 3 themes should never fail to return 500 matching puzzles.
 
 #### themes
 every puzzle has been tagged with a set of themes.
+
 Pass in an array like `?themes=["endgame","passedPawn","crushing"]` 
+
 To select just one theme, you pass an array with a single item like `?themes=["middlegame]`
 
 For a full list of themes see [LiChess Documentation](https://github.com/ornicar/lila/blob/master/translation/source/puzzleTheme.xml)
 
 #### themesType
 If you pass more than one theme you **MUST** include a themesType
+
 This can either be the string `ALL` or `ONE` and sets whether the puzzle must match ALL or only ONE of the submitted themes
 
 #### playerMoves
 Send an int to get puzzles containing that many moves for the player to make
+
 Majority of puzzles are either 2, 3, or 4 moves
+
 Any higher and you severely start limiting the number of puzzles available
