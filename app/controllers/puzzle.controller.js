@@ -1,22 +1,3 @@
-/*
-SELECT
-    PUZZLEID
-  , FEN
-  , MOVES
-  , RATING
-  , RATINGDEVIATION
-  , THEMES
-FROM
-  PUZZLES
-WHERE 1 = 1 
-  AND 1500 BETWEEN RATING - RATINGDEVIATION AND RATING + RATINGDEVIATION
-  AND CONTAINS(THEMES, 'crushing OR defensiveMove') > 0
-  AND(LENGTH(MOVES) - LENGTH(replace(MOVES, ' ', '')) + 1) = 6
-ORDER BY
-  DBMS_RANDOM.VALUE
-  OFFSET 0 ROWS FETCH NEXT 1 ROWS ONLY
-*/
-
 const oracledb = require('oracledb');
 oracledb.initOracleClient({ libDir: './instantclient_21_3' });
 
