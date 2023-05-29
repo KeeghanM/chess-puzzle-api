@@ -8,7 +8,7 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 var corsOptions = {
- // origin: "http://localhost:8081"
+  // origin: "http://localhost:8081"
 };
 
 app.use(cors(corsOptions));
@@ -18,9 +18,6 @@ app.use(express.json());
 
 // parse requests of content-type - application/x-www-form-urlencoded
 app.use(express.urlencoded({ extended: true }));
-
-const db = require("./app/models");
-db.sequelize.sync();
 
 // simple route
 app.get("/", (req, res) => {
