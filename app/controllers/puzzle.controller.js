@@ -1,12 +1,21 @@
 const oracledb = require("oracledb")
 
+const ErrorResponse = (message, status) => {
+  return {
+    message,
+    status,
+  }
+}
+
 exports.mainAccess = async (req, res) => {
   if (
     process.env.NODE_ENV === "production" &&
     (req.headers["x-mashape-proxy-secret"] == undefined ||
       req.headers["x-mashape-proxy-secret"] != process.env.RapidAPISecret)
   ) {
-    res.status(400).send("Request must be sent via RapidAPI")
+    res
+      .status(400)
+      .send(ErrorResponse("Request must be sent via RapidAPI", 400))
     return
   }
 
@@ -33,7 +42,7 @@ exports.mainAccess = async (req, res) => {
       secStr.some((x) => req.query.id.includes(x))
     ) {
       // Validate ID for Security
-      res.status(400).send("Invalid ID Sent")
+      res.status(400).send(ErrorResponse("Invalid ID", 400))
       return
     }
     queryString +=
@@ -49,7 +58,6 @@ exports.mainAccess = async (req, res) => {
   // PLAYERMOVES
   else {
     if (
-      invalidQueryString() ||
       (req.query.rating && parseInt(req.query.rating) == "NaN") ||
       (req.query.playerMoves && parseInt(req.query.playerMoves) == "NaN") ||
       (req.query.count && parseInt(req.query.count) == "NaN") ||
@@ -57,7 +65,7 @@ exports.mainAccess = async (req, res) => {
       (req.query.themesType &&
         secStr.some((x) => req.query.themesType.includes(x)))
     ) {
-      res.status(400).send("Invalid Query String")
+      res.status(400).send(ErrorResponse("Invalid Query", 400))
       return
     }
 
@@ -76,12 +84,19 @@ exports.mainAccess = async (req, res) => {
       try {
         themes = JSON.parse(req.query.themes)
       } catch {
-        res.status(400).send("Invalid Themes Array")
+        res.status(400).send(ErrorResponse("Invalid Themes", 400))
       }
 
       // If multiple themes are specified, they also need to specify a type
       if (themes.length > 1 && !req.query.themesType) {
-        res.status(400).send("themesType needed when multiple themes supplied")
+        res
+          .status(400)
+          .send(
+            ErrorResponse(
+              "themesType needed when multiple themes supplied",
+              400
+            )
+          )
         return
       }
 
@@ -124,7 +139,7 @@ exports.mainAccess = async (req, res) => {
     const result = await connection.execute(queryString)
 
     if (result.rows.length == 0) {
-      res.status(400).send("No Matching Puzzles")
+      res.status(400).send(ErrorResponse("No Matching Puzzles", 400))
       return
     } else {
       let puzzles = []
@@ -144,7 +159,11 @@ exports.mainAccess = async (req, res) => {
     }
   } catch (err) {
     console.error(err)
-    res.status(500).send("Error fetching puzzles. Please contact the admin.")
+    res
+      .status(500)
+      .send(
+        ErrorResponse("Error fetching puzzles. Please contact the admin.", 500)
+      )
     return
   } finally {
     if (connection) {
@@ -154,13 +173,14 @@ exports.mainAccess = async (req, res) => {
         console.error(err)
         res
           .status(500)
-          .send("Error fetching puzzles. Please contact the admin.")
+          .send(
+            ErrorResponse(
+              "Error fetching puzzles. Please contact the admin.",
+              500
+            )
+          )
         return
       }
     }
   }
-}
-
-function invalidQueryString() {
-  return false
 }
