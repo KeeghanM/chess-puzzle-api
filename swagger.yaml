@@ -32,9 +32,6 @@ info:
   version: 2.0.0
 servers:
   - url: https://chess-puzzles.p.rapidapi.com/api
-    description: V1 API
-  - url: https://chess-puzzles.p.rapidapi.com/api/v2
-    description: V2 API
 tags:
   - name: puzzles
     description: Access to chess puzzles
