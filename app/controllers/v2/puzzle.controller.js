@@ -1,26 +1,5 @@
 const oracledb = require('oracledb')
-
-/**
- * Generates a standardized error response object.
- * @param {string} message - The error message.
- * @param {number} status - The HTTP status code.
- * @param {string} code - A unique error code for easier client-side handling.
- * @returns {Object} Standardized error response object.
- */
-const ErrorResponse = (message, status, code) => {
-  return {
-    meta: {
-      status,
-      timestamp: new Date().toISOString(),
-      length: 0, // Always 0 for error responses
-    },
-    data: null,
-    error: {
-      code,
-      message,
-    },
-  }
-}
+const ErrorResponse = require('../utils/errorResponse')
 
 /**
  * Main access point for the puzzle API.
@@ -102,14 +81,31 @@ exports.mainAccess = async (req, res) => {
 
       // Filter by themes
       if (req.query.themes) {
-        queryString += " AND CONTAINS(THEMES, '"
         let themes
-        try {
-          themes = JSON.parse(req.query.themes)
-        } catch {
+
+        // Parse themes from query parameter
+        if (typeof req.query.themes === 'string') {
+          // Handle comma-separated list
+          themes = req.query.themes.split(',').map((theme) => theme.trim())
+        } else if (Array.isArray(req.query.themes)) {
+          // Handle repeated parameter
+          themes = req.query.themes
+        } else {
           res
             .status(400)
             .json(ErrorResponse('Invalid themes format', 400, 'INVALID_THEMES'))
+          return
+        }
+
+        // Remove any empty themes
+        themes = themes.filter((theme) => theme.length > 0)
+
+        if (themes.length === 0) {
+          res
+            .status(400)
+            .json(
+              ErrorResponse('No valid themes provided', 400, 'INVALID_THEMES')
+            )
           return
         }
 
@@ -127,12 +123,14 @@ exports.mainAccess = async (req, res) => {
         }
 
         // Construct theme query
-        for (let theme of themes) {
-          queryString += ' ' + theme
-          queryString += req.query.themesType == 'ALL' ? ' AND' : ' OR'
-        }
-        queryString = queryString.substring(0, queryString.lastIndexOf(' '))
-        queryString += "') > 0 "
+        queryString += ' AND ('
+        themes.forEach((theme, index) => {
+          if (index > 0) {
+            queryString += req.query.themesType === 'ALL' ? ' AND ' : ' OR '
+          }
+          queryString += `INSTR(THEMES, '${theme}') > 0`
+        })
+        queryString += ')'
       }
 
       // Set limit and rating range

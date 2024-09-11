@@ -1,10 +1,14 @@
-module.exports = app => {
-    const puzzles = require("../controllers/puzzle.controller.js");
-    var router = require("express").Router();
+module.exports = (app) => {
+  const v1 = require('../controllers/v1/puzzle.controller.js')
+  const v2 = require('../controllers/v2/puzzle.controller.js')
+  const router = require('express').Router()
 
-    // The main puzzle API is accessed from the one root route
-    // with different options specified by query string
-    router.get("/", puzzles.mainAccess);
+  // v1 Route which is the original implementation and accessed directly at /api
+  router.get('/', v1.mainAccess)
 
-    app.use('/api', router);
-};
+  // v2 Route which is the new implementation and accessed at /api/v2
+  router.get('/v2', v2.mainAccess)
+
+  // Set up the routes at /api
+  app.use('/api', router)
+}
