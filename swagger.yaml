@@ -1,0 +1,267 @@
+openapi: 3.0.3
+info:
+  title: Chess Puzzle API
+  description: |-
+    A Simple API to access over 2 Million Chess Puzzles
+
+    This API uses puzzles provided by LiChess but is a 3rd party solution not affiliated with LiChess.
+
+    If you wish to access the LiChess puzzle collection yourself you can do so here: https://database.lichess.org/#puzzles
+
+    Puzzles Database last updated 10/12/2021
+
+    Current Puzzle Count: 2,137,287
+
+    ## API Versions
+    The API is available in two versions:
+    - V1: Maintained for backward compatibility
+    - V2: Contains new features and improvements
+
+    ## Puzzle Format
+    When you query the API you will get back a JSON object containing an array of Puzzle objects. If you request a single puzzle this array will contain a single puzzle object.
+
+    Moves are in UCI format. Use a chess library to convert them to SAN, for display.
+    FEN is the position before the opponent makes their move.
+    The position to present to the player is after applying the first move to that FEN.
+    The second move is the beginning of the solution.
+
+    ## Using The API
+    To access the API you must register with [RapidAPI](https://rapidapi.com/KeeghanM/api/chess-puzzles/) doing so is 100% free, and the API is available for free consumption.
+
+    All queries are handled by query string parameters.
+  version: 2.0.0
+servers:
+  - url: https://chess-puzzles.p.rapidapi.com/api
+    description: V1 API
+  - url: https://chess-puzzles.p.rapidapi.com/api/v2
+    description: V2 API
+tags:
+  - name: puzzles
+    description: Access to chess puzzles
+paths:
+  /:
+    get:
+      tags:
+        - puzzles
+      summary: Get chess puzzles (V1)
+      description: Retrieve chess puzzles based on various query parameters (V1 endpoint)
+      operationId: getPuzzlesV1
+      parameters:
+        - $ref: '#/components/parameters/id'
+        - $ref: '#/components/parameters/rating'
+        - $ref: '#/components/parameters/count'
+        - $ref: '#/components/parameters/themesV1'
+        - $ref: '#/components/parameters/themesType'
+        - $ref: '#/components/parameters/playerMoves'
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PuzzleResponseV1'
+        '400':
+          $ref: '#/components/responses/BadRequestV1'
+        '500':
+          $ref: '#/components/responses/InternalErrorV1'
+      security:
+        - RapidAPI: []
+  /v2:
+    get:
+      tags:
+        - puzzles
+      summary: Get chess puzzles (V2)
+      description: Retrieve chess puzzles based on various query parameters (V2 endpoint)
+      operationId: getPuzzlesV2
+      parameters:
+        - $ref: '#/components/parameters/id'
+        - $ref: '#/components/parameters/rating'
+        - $ref: '#/components/parameters/count'
+        - $ref: '#/components/parameters/themesV2'
+        - $ref: '#/components/parameters/themesType'
+        - $ref: '#/components/parameters/playerMoves'
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PuzzleResponseV2'
+        '400':
+          $ref: '#/components/responses/BadRequestV2'
+        '401':
+          $ref: '#/components/responses/UnauthorizedV2'
+        '404':
+          $ref: '#/components/responses/NotFoundV2'
+        '500':
+          $ref: '#/components/responses/InternalErrorV2'
+      security:
+        - RapidAPI: []
+components:
+  parameters:
+    id:
+      name: id
+      in: query
+      description: ID of a specific puzzle to retrieve
+      schema:
+        type: string
+    rating:
+      name: rating
+      in: query
+      description: Target rating for puzzles
+      schema:
+        type: integer
+    count:
+      name: count
+      in: query
+      description: Number of puzzles to return (1-500)
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 500
+    themesV1:
+      name: themes
+      in: query
+      description: Themes to filter puzzles (V1 format)
+      schema:
+        type: string
+      example: '["endgame","passedPawn","crushing"]'
+    themesV2:
+      name: themes
+      in: query
+      description: Themes to filter puzzles (V2 format)
+      schema:
+        type: array
+        items:
+          type: string
+      style: form
+      explode: true
+    themesType:
+      name: themesType
+      in: query
+      description: Type of theme matching (required if multiple themes are specified)
+      schema:
+        type: string
+        enum: [ALL, ONE]
+    playerMoves:
+      name: playerMoves
+      in: query
+      description: Number of moves for the player to make
+      schema:
+        type: integer
+  schemas:
+    PuzzleResponseV1:
+      type: object
+      properties:
+        puzzles:
+          type: array
+          items:
+            $ref: '#/components/schemas/Puzzle'
+    PuzzleResponseV2:
+      type: object
+      properties:
+        meta:
+          $ref: '#/components/schemas/Meta'
+        data:
+          type: object
+          properties:
+            puzzles:
+              type: array
+              items:
+                $ref: '#/components/schemas/Puzzle'
+        error:
+          type: object
+          nullable: true
+    Puzzle:
+      type: object
+      properties:
+        puzzleid:
+          type: string
+        fen:
+          type: string
+        moves:
+          type: array
+          items:
+            type: string
+        rating:
+          type: integer
+        ratingdeviation:
+          type: integer
+        themes:
+          type: array
+          items:
+            type: string
+    Meta:
+      type: object
+      properties:
+        status:
+          type: integer
+        timestamp:
+          type: string
+          format: date-time
+        length:
+          type: integer
+    ErrorResponseV1:
+      type: object
+      properties:
+        message:
+          type: string
+        status:
+          type: integer
+    ErrorResponseV2:
+      type: object
+      properties:
+        meta:
+          $ref: '#/components/schemas/Meta'
+        data:
+          type: object
+          nullable: true
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+            message:
+              type: string
+  responses:
+    BadRequestV1:
+      description: Invalid input
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponseV1'
+    InternalErrorV1:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponseV1'
+    BadRequestV2:
+      description: Invalid input
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponseV2'
+    UnauthorizedV2:
+      description: Unauthorized access
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponseV2'
+    NotFoundV2:
+      description: No puzzles found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponseV2'
+    InternalErrorV2:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponseV2'
+  securitySchemes:
+    RapidAPI:
+      type: apiKey
+      name: X-RapidAPI-Key
+      in: header
