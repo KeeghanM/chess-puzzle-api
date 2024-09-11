@@ -1,7 +1,7 @@
 const express = require('express')
 const cors = require('cors')
 const dotenv = require('dotenv')
-const ErrorResponse = require('./app/utils/errorResponse')
+const ErrorResponse = require('./app/controllers/v2/utils/errorResponse.js')
 
 // Load environment variables
 if (process.env.NODE_ENV !== 'production') {

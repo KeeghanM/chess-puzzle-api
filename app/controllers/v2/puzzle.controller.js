@@ -1,5 +1,5 @@
 const oracledb = require('oracledb')
-const ErrorResponse = require('../utils/errorResponse')
+const ErrorResponse = require('./utils/errorResponse.js')
 
 /**
  * Main access point for the puzzle API.
