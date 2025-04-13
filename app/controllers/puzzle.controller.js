@@ -18,25 +18,23 @@ exports.mainAccess = async (req, res) => {
       .send(ErrorResponse("Request must be sent via RapidAPI", 400))
     return
   }
+  const secStr = ["/", ";"]
 
   let queryString =
-    "SELECT puzzleid,fen,rating,ratingdeviation,moves,themes FROM puzzles WHERE 1=1 "
-  let secStr = ["/", ";"]
+    "SELECT puzzleid,fen,rating,ratingdeviation,moves,themes FROM PUZZLES WHERE 1=1 "
 
-  // First check if no query string present
-  // if this is the case, return a single random puzzle
   if (Object.keys(req.query).length === 0) {
-    var randRating = Math.floor(Math.random() * (3001 - 511 + 1) + 511)
+    // First check if no query string present
+    // if this is the case, return a single random puzzle
+    const randRating = Math.floor(Math.random() * (3001 - 511 + 1) + 511)
     queryString +=
       "AND rating BETWEEN " +
       (randRating - 1) +
       " AND " +
       (randRating + 1) +
       " ORDER BY DBMS_RANDOM.VALUE OFFSET 0 ROWS FETCH NEXT 1 ROWS ONLY"
-  }
-
-  // If an ID gets passed in, handle that as a priority
-  else if (req.query.id) {
+  } else if (req.query.id) {
+    // If an ID gets passed in, handle that as a priority
     if (
       req.query.id.length > 6 ||
       secStr.some((x) => req.query.id.includes(x))
@@ -49,14 +47,12 @@ exports.mainAccess = async (req, res) => {
       "AND puzzleid = '" +
       req.query.id +
       "' OFFSET 0 ROWS FETCH NEXT 1 ROWS ONLY"
-  }
-
-  // If no ID, then we need to handle
-  // COUNT
-  // THEMES
-  // RATING
-  // PLAYERMOVES
-  else {
+  } else {
+    // If no ID, then we need to handle
+    // COUNT
+    // THEMES
+    // RATING
+    // PLAYERMOVES
     if (
       (req.query.rating && parseInt(req.query.rating) == "NaN") ||
       (req.query.playerMoves && parseInt(req.query.playerMoves) == "NaN") ||
@@ -85,6 +81,7 @@ exports.mainAccess = async (req, res) => {
         themes = JSON.parse(req.query.themes)
       } catch {
         res.status(400).send(ErrorResponse("Invalid Themes", 400))
+        return
       }
 
       // If multiple themes are specified, they also need to specify a type
@@ -101,7 +98,7 @@ exports.mainAccess = async (req, res) => {
       }
 
       // Now loop through the themes and attach them
-      for (let theme of themes) {
+      for (const theme of themes) {
         queryString += " " + theme
         queryString += req.query.themesType == "ALL" ? " AND" : " OR" // the type sets whether we use AND or OR selectors for the theme
       }
@@ -109,33 +106,33 @@ exports.mainAccess = async (req, res) => {
       queryString += "') > 0 "
     }
 
-    // We always want to attach a rating (to make the query faster) and a limit
+    // We always want to attach a rating (to make the query faster)
     // If the user hasn't supplied a rating, we will generate one for them
-    let limit = req.query.count ? req.query.count : 1
-    limit = limit > 500 ? 500 : limit
-
-    let rating = req.query.rating
+    const rating = req.query.rating
       ? req.query.rating
       : Math.floor(Math.random() * (3001 - 511 + 1) + 511)
+
     queryString +=
       " AND " +
       parseInt(rating) +
       " BETWEEN RATING - RATINGDEVIATION AND RATING + RATINGDEVIATION "
+
+    // Finally, we need to attach the limit
+    // If the user has supplied a count, we will use that capped at 500
+    // If not, we will use the default of 1
+    const limit = req.query.count ? Math.min(req.query.count, 500) : 1
     queryString +=
       " ORDER BY DBMS_RANDOM.VALUE OFFSET 0 ROWS FETCH NEXT " +
       limit +
       " ROWS ONLY"
   }
 
-  let connection
   try {
-    const connectionOptions = {
+    const connection = await oracledb.getConnection({
       user: process.env.DB_USERNAME,
       password: process.env.DB_PASSWORD,
       connectionString: process.env.DB_CONNECTION_STRING,
-    }
-    connection = await oracledb.getConnection(connectionOptions)
-
+    })
     const result = await connection.execute(queryString)
 
     if (result.rows.length == 0) {
@@ -165,22 +162,5 @@ exports.mainAccess = async (req, res) => {
         ErrorResponse("Error fetching puzzles. Please contact the admin.", 500)
       )
     return
-  } finally {
-    if (connection) {
-      try {
-        await connection.close()
-      } catch (err) {
-        console.error(err)
-        res
-          .status(500)
-          .send(
-            ErrorResponse(
-              "Error fetching puzzles. Please contact the admin.",
-              500
-            )
-          )
-        return
-      }
-    }
   }
 }
