@@ -3,7 +3,6 @@ import oracledb, { Connection, OUT_FORMAT_OBJECT } from 'oracledb'
 import { ErrorResponse, PuzzleResult } from './puzzle.controller'
 
 const AdminController = async (req: Request, res: Response) => {
-  // RapidAPI authentication check
   if (
     process.env.NODE_ENV === 'production' &&
     (req.headers['x-admin-secret'] === undefined ||
