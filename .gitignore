@@ -1,7 +1,3 @@
 node_modules
-app/config/db.config.js
-
 .env*
-instantclient_21_3
-
-package-lock.json
+dist/
