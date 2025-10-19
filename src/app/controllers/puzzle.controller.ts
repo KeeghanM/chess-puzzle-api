@@ -181,8 +181,6 @@ const PuzzleController = async (req: Request, res: Response) => {
       return
     }
 
-    console.log(result.rows)
-
     const puzzles = result.rows.map((puzzle) => ({
       puzzleid: puzzle.PUZZLEID,
       fen: puzzle.FEN,
