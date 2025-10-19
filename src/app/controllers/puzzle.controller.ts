@@ -2,14 +2,14 @@ import type { Request, Response } from 'express'
 import oracledb, { Connection, OUT_FORMAT_OBJECT } from 'oracledb'
 import { z } from 'zod'
 
-const ErrorResponse = (message: string, status: number) => {
+export const ErrorResponse = (message: string, status: number) => {
   return {
     message,
     status,
   }
 }
 
-type PuzzleResult = {
+export type PuzzleResult = {
   PUZZLEID: string
   FEN: string
   RATING: string
@@ -86,8 +86,8 @@ const PuzzleController = async (req: Request, res: Response) => {
   // RapidAPI authentication check
   if (
     process.env.NODE_ENV === 'production' &&
-    (req.headers['x-mashape-proxy-secret'] == undefined ||
-      req.headers['x-mashape-proxy-secret'] != process.env.RapidAPISecret)
+    (req.headers['x-mashape-proxy-secret'] === undefined ||
+      req.headers['x-mashape-proxy-secret'] !== process.env.RAPID_API_SECRET)
   ) {
     res
       .status(400)
