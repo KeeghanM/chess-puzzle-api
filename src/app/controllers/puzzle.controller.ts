@@ -83,6 +83,8 @@ const QuerySchema = z
   )
 
 const PuzzleController = async (req: Request, res: Response) => {
+  console.log('Incoming headers:', req.headers)
+  console.log('Query:', req.query)
   // RapidAPI authentication check
   if (
     process.env.NODE_ENV === 'production' &&
@@ -98,7 +100,7 @@ const PuzzleController = async (req: Request, res: Response) => {
   // Validate query parameters with Zod
   const queryValidation = QuerySchema.safeParse(req.query)
 
-  console.log(queryValidation)
+  console.log('validation:', queryValidation)
 
   if (!queryValidation.success) {
     const errorMessage = queryValidation.error.issues
