@@ -98,6 +98,8 @@ const PuzzleController = async (req: Request, res: Response) => {
   // Validate query parameters with Zod
   const queryValidation = QuerySchema.safeParse(req.query)
 
+  console.log(queryValidation)
+
   if (!queryValidation.success) {
     const errorMessage = queryValidation.error.issues
       .map((err) => err.message)
